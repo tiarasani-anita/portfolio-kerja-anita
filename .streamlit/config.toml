@@ -2,7 +2,7 @@
 gatherUsageStats = false
 
 [server]
-headless = false
+headless = true
 address = "localhost"
 port = 8501
 

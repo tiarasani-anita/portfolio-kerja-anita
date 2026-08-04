@@ -1,27 +1,14 @@
-"""
-============================================================
-PORTOFOLIO PROFESIONAL - ANITA TIARA SANI
-Admin Warehouse & Admin Umum | Data-Driven Portfolio
-============================================================
-Aplikasi Streamlit interaktif dengan:
-- Dashboard Admin Warehouse (inventaris 150+ item, transaksi masuk/keluar)
-- Dashboard Admin Umum & Keuangan (jurnal, laba rugi, neraca, arus kas)
-- Dashboard Hasil Kinerja (KPI, grafik, diagram, nilai konkret)
-- Desain profesional modern dengan tema neon-gelap
-"""
+"""Portofolio interaktif Anita Tiara Sani - Admin Warehouse & Admin Umum."""
 
 import streamlit as st
 import pandas as pd
 import numpy as np
-from datetime import datetime
-import plotly.graph_objects as go
-
-# Import modul lokal
 import sys, os
+
 sys.path.insert(0, os.path.dirname(__file__))
 from data.generate_data import load_all_data
 from utils.formulas import (
-    vlookup, vlookup_batch, nested_if, status_stok, kategori_harga,
+    vlookup, nested_if, status_stok, kategori_harga,
     pivot_summary, pivot_multi, hitung_laba_rugi, hitung_neraca,
     hitung_arus_kas, hitung_kpi_warehouse, format_rupiah, format_persen,
     format_angka
@@ -29,12 +16,9 @@ from utils.formulas import (
 from utils.charts import (
     bar_chart, pie_chart, line_chart, multi_line_chart, histogram,
     gauge_chart, scatter_chart, treemap, waterfall_chart, stacked_bar_chart,
-    kpi_card, COLORS
+    kpi_card, COLORS, GRADIENT
 )
 
-# ============================================================
-# KONFIGURASI HALAMAN
-# ============================================================
 st.set_page_config(
     page_title="Anita Tiara Sani | Portofolio Admin",
     page_icon="📊",
@@ -42,13 +26,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ============================================================
-# CUSTOM CSS - DESAIN PROFESIONAL
-# ============================================================
+
 def inject_css():
     st.markdown("""
     <style>
-    /* ===== TEMA GLOBAL ===== */
     :root {
         --bg: #070b16;
         --card: #0d1428;
@@ -65,7 +46,6 @@ def inject_css():
         color: var(--text);
     }
 
-    /* ===== SIDEBAR ===== */
     section[data-testid="stSidebar"] {
         background: linear-gradient(180deg, #0d1428 0%, #0a0f1f 100%);
         border-right: 1px solid rgba(0, 240, 255, 0.15);
@@ -82,10 +62,7 @@ def inject_css():
         color: var(--cyan);
     }
 
-    /* ===== TOMBOL RADIO (NAVIGASI) ===== */
-    .stRadio > div {
-        gap: 8px;
-    }
+    .stRadio > div { gap: 8px; }
     .stRadio label {
         display: flex;
         align-items: center;
@@ -104,7 +81,6 @@ def inject_css():
         box-shadow: 0 0 12px rgba(0,240,255,0.2);
     }
 
-    /* ===== JUDUL & TOMBOL ===== */
     h1, h2, h3 {
         font-family: 'Sora', 'Inter', sans-serif;
         color: var(--text);
@@ -116,7 +92,6 @@ def inject_css():
         background-clip: text;
     }
 
-    /* ===== KARTU METRIK ===== */
     div[data-testid="stMetric"] {
         background: linear-gradient(135deg, rgba(0,240,255,0.08), rgba(255,46,196,0.08));
         border: 1px solid rgba(0,240,255,0.2);
@@ -129,16 +104,9 @@ def inject_css():
         transform: translateY(-4px);
         box-shadow: 0 8px 30px rgba(0,240,255,0.2);
     }
-    div[data-testid="stMetric"] label {
-        color: var(--muted);
-        font-size: 0.85rem;
-    }
-    div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-        color: var(--cyan);
-        font-weight: 700;
-    }
+    div[data-testid="stMetric"] label { color: var(--muted); font-size: 0.85rem; }
+    div[data-testid="stMetric"] [data-testid="stMetricValue"] { color: var(--cyan); font-weight: 700; }
 
-    /* ===== KARTU CUSTOM ===== */
     .custom-card {
         background: linear-gradient(135deg, rgba(13,20,40,0.9), rgba(10,15,31,0.9));
         border: 1px solid rgba(0,240,255,0.15);
@@ -152,16 +120,9 @@ def inject_css():
         transform: translateY(-3px);
         box-shadow: 0 8px 32px rgba(0,240,255,0.15);
     }
-    .custom-card h3 {
-        color: var(--cyan);
-        margin-bottom: 8px;
-    }
-    .custom-card p {
-        color: var(--muted);
-        line-height: 1.7;
-    }
+    .custom-card h3 { color: var(--cyan); margin-bottom: 8px; }
+    .custom-card p { color: var(--muted); line-height: 1.7; }
 
-    /* ===== BADGE / TAG ===== */
     .badge {
         display: inline-block;
         padding: 4px 12px;
@@ -177,17 +138,13 @@ def inject_css():
     .badge-purple { color: var(--purple); border-color: var(--purple); background: rgba(139,92,246,0.08); }
     .badge-green { color: var(--green); border-color: var(--green); background: rgba(0,255,163,0.08); }
 
-    /* ===== TABEL ===== */
     .stDataFrame {
         border-radius: 12px;
         overflow: hidden;
         border: 1px solid rgba(0,240,255,0.1);
     }
-    .stDataFrame [data-testid="stDataFrame"] {
-        background: rgba(13,20,40,0.6);
-    }
+    .stDataFrame [data-testid="stDataFrame"] { background: rgba(13,20,40,0.6); }
 
-    /* ===== DIVIDER ===== */
     hr {
         border: none;
         height: 1px;
@@ -195,7 +152,6 @@ def inject_css():
         margin: 20px 0;
     }
 
-    /* ===== EXPANDER ===== */
     details {
         background: rgba(13,20,40,0.6);
         border: 1px solid rgba(0,240,255,0.15);
@@ -203,13 +159,8 @@ def inject_css():
         padding: 10px 16px;
         margin-bottom: 10px;
     }
-    details summary {
-        color: var(--cyan);
-        font-weight: 600;
-        cursor: pointer;
-    }
+    details summary { color: var(--cyan); font-weight: 600; cursor: pointer; }
 
-    /* ===== FOOTER ===== */
     .footer {
         text-align: center;
         padding: 20px;
@@ -219,7 +170,6 @@ def inject_css():
         margin-top: 40px;
     }
 
-    /* ===== SCROLLBAR ===== */
     ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb {
@@ -228,28 +178,33 @@ def inject_css():
     }
     ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, var(--magenta), var(--cyan)); }
 
-    /* ===== TABS ===== */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         background: rgba(13,20,40,0.5);
         border-radius: 12px;
         padding: 6px;
     }
-    .stTabs [data-baseweb="tab"] {
-        border-radius: 8px;
-        padding: 8px 18px;
-        color: var(--muted);
-    }
+    .stTabs [data-baseweb="tab"] { border-radius: 8px; padding: 8px 18px; color: var(--muted); }
     .stTabs [aria-selected="true"] {
         background: linear-gradient(90deg, rgba(0,240,255,0.15), rgba(255,46,196,0.15));
         color: var(--cyan) !important;
     }
+
+    .contact-btn {
+        display: inline-block;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        border: 1px solid;
+        transition: all 0.3s ease;
+    }
+    .contact-btn:hover { transform: translateY(-2px); }
     </style>
     """, unsafe_allow_html=True)
 
-# ============================================================
-# HEADER / NAVBAR
-# ============================================================
+
 def render_header():
     st.markdown("""
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(0,240,255,0.15);margin-bottom:20px;">
@@ -266,32 +221,29 @@ def render_header():
     </div>
     """, unsafe_allow_html=True)
 
-# ============================================================
-# HLM: BERANDA (PROFIL)
-# ============================================================
+
 def render_beranda():
     st.markdown("## 👋 Hallo, Saya <span class='gradient-text'>Anita Tiara Sani</span>", unsafe_allow_html=True)
     st.markdown("### 🏢 Admin Warehouse & Admin Umum | Data & Finance Enthusiast")
     st.markdown("""
     <div class="custom-card">
-<p>Profesional administrasi dengan pengalaman <b>2 tahun+</b> di bidang tata kelola logistik dan 
-        operasional manufaktur. Berpengalaman dalam memproses <b>data entry bervolume tinggi</b> (1.000+ item) 
-        serta menyusun <b>laporan inventaris & keuangan akurat</b> menggunakan <b>Advanced MS Excel</b> 
-        (VLOOKUP, Pivot Table, IF) serta tools analisis data modern untuk dashboard interaktif.</p>
-        <p>Terbiasa bekerja dengan detail tinggi, mengelola dokumen operasional, dan berkoordinasi dengan 
-        vendor untuk menjamin kelancaran logistik. Siap mendukung efisiensi administrasi perusahaan Anda.</p>
+        <p>Profesional administrasi dengan pengalaman <b>2 tahun+</b> di bidang tata kelola logistik dan operasional manufaktur. 
+        Terbiasa memproses <b>data entry bervolume tinggi</b> (1.000+ item) dan menyusun <b>laporan inventaris &amp; keuangan 
+        yang akurat</b> memakai <b>Advanced MS Excel</b> (VLOOKUP, Pivot Table, IF) plus tools analisis data modern untuk 
+        dashboard interaktif.</p>
+        <p>Detail-oriented, terbiasa mengelola dokumen operasional, dan berkoordinasi dengan vendor untuk menjamin kelancaran 
+        logistik. Siap membantu efisiensi administrasi perusahaan Anda.</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Tingkatkan jarak: kolom keahlian & soft skills
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("### 🛠️ Keahlian Teknis")
+        st.markdown("### 🛠 Keahlian Teknis")
         tech_skills = {
             "Microsoft Excel (VLOOKUP, Pivot Table, IF)": 95,
             "Data Entry & Manajemen Data": 95,
             "Manajemen Inventaris": 92,
-"Laporan Keuangan & Akuntansi": 85,
+            "Laporan Keuangan & Akuntansi": 85,
             "Analisis Data & Dashboard": 80,
             "Google Workspace / Drive": 90,
             "Dokumen Kontrol (MS Word, Outlook)": 88,
@@ -328,13 +280,12 @@ def render_beranda():
             </div>
             """, unsafe_allow_html=True)
 
-    # Sertifikat
     st.markdown("### 🏆 Sertifikasi Resmi")
     cert_cols = st.columns(3)
     certs = [
         ("📊", "Google Analytics", "Google · Sertifikasi resmi analisis data & web analytics", "badge-cyan"),
         ("💼", "Finance Essentials", "NASBA · Sertifikasi akuntansi & keuangan diakui", "badge-magenta"),
-        ("🖥️", "Microsoft Office Specialist", "Kursus Digital · Excel, Word, PowerPoint", "badge-purple"),
+        ("🖥", "Microsoft Office Specialist", "Kursus Digital · Excel, Word, PowerPoint", "badge-purple"),
     ]
     for col, (icon, title, desc, badge) in zip(cert_cols, certs):
         with col:
@@ -347,21 +298,20 @@ def render_beranda():
             </div>
             """, unsafe_allow_html=True)
 
-    # Pengalaman kerja
     st.markdown("### 💼 Pengalaman Kerja")
     exp_cols = st.columns(2)
     with exp_cols[0]:
         st.markdown("""
         <div class="custom-card">
             <span class="badge badge-cyan">Jul 2025 - Feb 2026</span>
-<h3>Admin Warehouse — PT Nikomas Gemilang</h3>
+            <h3>Admin Warehouse — PT Nikomas Gemilang</h3>
             <p><i>Badan Usaha Manufaktur Sepatu</i></p>
             <ul style="color:#93a4c3;font-size:0.9rem;line-height:1.8;">
-                <li>Menyusun laporan inventaris harian &amp; bulanan dengan VLOOKUP, Pivot Table, dan IF sebagai dasar kontrol stok yang akurat.</li>
+                <li>Menyusun laporan inventaris harian &amp; bulanan pakai VLOOKUP, Pivot Table, dan IF sebagai dasar kontrol stok yang akurat.</li>
                 <li>Mengelola data entry 1.000+ item barang masuk/keluar secara rutin menggunakan Microsoft Excel.</li>
                 <li>Memproses, menerbitkan, dan mengarsipkan dokumen operasional (surat jalan, faktur, PO) via MS Word.</li>
-                <li>Mengoordinasikan alur logistik dengan 15+ vendor via MS Outlook, memastikan pengiriman tepat waktu.</li>
-                <li>Memastikan keakuratan data stok selama pergantian bulan dan mendukung proses audit internal.</li>
+                <li>Mengoordinasikan alur logistik dengan 15+ vendor via MS Outlook agar pengiriman tepat waktu.</li>
+                <li>Memastikan keakuratan data stok saat pergantian bulan dan mendukung proses audit internal.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -369,18 +319,17 @@ def render_beranda():
         st.markdown("""
         <div class="custom-card">
             <span class="badge badge-magenta">Feb 2024 - Jul 2025</span>
-<h3>Operator Produksi — PT Nikomas Gemilang</h3>
+            <h3>Operator Produksi — PT Nikomas Gemilang</h3>
             <p><i>Badan Usaha Manufaktur Sepatu</i></p>
             <ul style="color:#93a4c3;font-size:0.9rem;line-height:1.8;">
                 <li>Menyusun &amp; memverifikasi laporan hasil produksi harian yang akurat menggunakan Microsoft Excel.</li>
-                <li>Mengoptimalkan pemakaian bahan baku sesuai instruksi kerja (WI), menekan material waste hingga di bawah 5% per bulan.</li>
-                <li>Melakukan inspeksi kualitas produk dan mengurangi cacat produksi hingga 15%.</li>
+                <li>Mengoptimalkan pemakaian bahan baku sesuai instruksi kerja (WI), menekan material waste di bawah 5% tiap bulan.</li>
+                <li>Melakukan inspeksi kualitas produk dan menurunkan cacat produksi hingga 15%.</li>
                 <li>Mengoperasikan mesin produksi sesuai SOP dengan tingkat akurasi 98%.</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
 
-    # Pendidikan
     st.markdown("### 🎓 Pendidikan")
     edu_cols = st.columns(2)
     with edu_cols[0]:
@@ -400,29 +349,34 @@ def render_beranda():
         </div>
         """, unsafe_allow_html=True)
 
-    # Kontak
     st.markdown("### 📞 Kontak")
-    st.markdown("""
-    <div class="custom-card" style="display:flex;justify-content:space-around;flex-wrap:wrap;text-align:center;">
-        <div><div style="font-size:1.6rem;">📧</div><div style="font-weight:600;color:#eef4ff;">anitatiara25@gmail.com</div></div>
-        <div><div style="font-size:1.6rem;">📱</div><div style="font-weight:600;color:#eef4ff;">0856-6932-3610</div></div>
-        <div><div style="font-size:1.6rem;">💼</div><div style="font-weight:600;color:#eef4ff;">LinkedIn</div></div>
-        <div><div style="font-size:1.6rem;">📍</div><div style="font-weight:600;color:#eef4ff;">Babelan, Bekasi</div></div>
-    </div>
-    """, unsafe_allow_html=True)
+    ce1, ce2 = st.columns([2, 1])
+    with ce1:
+        st.markdown("""
+        <div class="custom-card" style="display:flex;justify-content:space-around;flex-wrap:wrap;text-align:center;">
+            <div><div style="font-size:1.6rem;">📧</div><div style="font-weight:600;color:#eef4ff;">anitatiara25@gmail.com</div></div>
+            <div><div style="font-size:1.6rem;">📱</div><div style="font-weight:600;color:#eef4ff;">0856-6932-3610</div></div>
+            <div><div style="font-size:1.6rem;">📍</div><div style="font-weight:600;color:#eef4ff;">Babelan, Bekasi</div></div>
+        </div>
+        """, unsafe_allow_html=True)
+    with ce2:
+        li_url = "https://www.linkedin.com/in/anitatiarasani"
+        wa_url = "https://wa.me/6285669323610"
+        st.markdown(f"""
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <a class="contact-btn" style="color:#00f0ff;border-color:#00f0ff;background:rgba(0,240,255,0.08);text-align:center;" href="{li_url}" target="_blank">💼 LinkedIn</a>
+            <a class="contact-btn" style="color:#00ffa3;border-color:#00ffa3;background:rgba(0,255,163,0.08);text-align:center;" href="{wa_url}" target="_blank">💬 WhatsApp</a>
+        </div>
+        """, unsafe_allow_html=True)
 
 
-# ============================================================
-# HLM: DASHBOARD WAREHOUSE
-# ============================================================
 def render_warehouse(data):
     df_inv = data['inventory']
     df_trx = data['transactions']
 
     st.markdown("## 🏭 Dashboard <span class='gradient-text'>Admin Warehouse</span>", unsafe_allow_html=True)
-    st.markdown("Manajemen inventaris & transaksi barang masuk/keluar secara interaktif — simulasi fungsi VLOOKUP, Pivot Table, dan nested IF dalam analisis data.")
+    st.markdown("Manajemen inventaris dan transaksi barang masuk/keluar, lengkap dengan simulasi fungsi Excel (VLOOKUP, Pivot Table, nested IF).")
 
-    # KPI
     kpi = hitung_kpi_warehouse(df_inv, df_trx)
     mc1, mc2, mc3, mc4 = st.columns(4)
     mc1.metric("💰 Total Nilai Inventaris", format_rupiah(kpi['total_nilai_inventaris']))
@@ -430,38 +384,31 @@ def render_warehouse(data):
     mc3.metric("⚠️ Stok Kritis", f"{kpi['stok_kritis']} item ({kpi['persentase_stok_kritis']}%)")
     mc4.metric("🎯 Akurasi Data Entry", f"{kpi['akurasi']}%")
 
-    # Penjelasan detail untuk HRD
-    st.markdown("""
-    <div class="custom-card" style="border-left:4px solid #00f0ff;">
-        <h3 style="margin-top:0;">🔍 Apa yang Saya Kelola di Dashboard Ini?</h3>
-        <p style="margin-bottom:8px;">
-            Dashboard ini merepresentasikan <b>tanggung jawab nyata Admin Warehouse</b> di lingkungan manufaktur sepatu:
-        </p>
-        <ul style="color:#93a4c3;font-size:0.9rem;line-height:1.9;margin-bottom:0;">
-            <li><b>📦 145+ SKU inventaris</b> — Bahan baku, barang jadi, sparepart, ATK, dan peralatan dengan total nilai lebih dari <b>Rp 9,8 miliar</b> yang dikelola secara sistematis.</li>
-            <li><b>🔄 5.000+ transaksi barang masuk/keluar</b> sepanjang 12 bulan — setiap pergerakan barang tercatat lengkap dengan dokumen (PO, Surat Jalan, Faktur), PIC, dan keterangan.</li>
-            <li><b>⚠️ Monitoring stok kritis</b> — Deteksi dini stok menipis/habis untuk mencegah <i>stockout</i> yang dapat menghentikan produksi. Ini bukti kemampuan saya menjaga <b>kelancaran operasional</b>.</li>
-            <li><b>🎯 Akurasi data entry 99,5%</b> — Standar ketelitian yang saya pertahankan melalui sistem double-check dan verifikasi silang.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 Penjelasan Detail — Dashboard Warehouse", expanded=False):
+        st.markdown("""
+        **Dashboard ini meniru pekerjaan admin warehouse di perusahaan manufaktur secara nyata.**
+        
+        - **💰 Total Nilai Inventaris** adalah jumlah dari seluruh nilai stok barang (stok × harga satuan) di gudang. Angka besar ini menunjukkan saya terbiasa mengelola aset perusahaan yang bernilai miliaran rupiah.
+        - **📦 Total SKU** menunjukkan berapa banyak jenis barang berbeda yang harus saya ketahui detailnya (nama, lokasi, vendor, harga, stok minimum). Semakin banyak SKU, semakin tinggi tingkat kompleksitas pengelolaannya.
+        - **⚠️ Stok Kritis** adalah barang dengan stok *Habis* atau *Menipis* (di bawah stok minimum). Saya memantaunya setiap hari supaya produksi tidak terhenti karena barang tidak tersedia.
+        - **🎯 Akurasi Data Entry** adalah tingkat ketelitian saya dalam memasukkan dan memverifikasi data, dipertahankan lewat metode double-check.
+        """)
 
     st.markdown("---")
 
-    # Tab untuk navigasi
     tab_inv, tab_trx, tab_analisis = st.tabs([
         "📦 Data Inventaris", "🔄 Transaksi Barang", "📊 Analisis & Grafik"
     ])
 
-    # ---- TAB 1: INVENTARIS ----
     with tab_inv:
         st.markdown("### 📦 Data Inventaris Barang")
-        st.markdown("Gunakan <b>filter</b> untuk simulasi pencarian data (VLOOKUP) dan melihat stok per kategori.", unsafe_allow_html=True)
-
-        st.info("""
-        **💡 Cara Kerja Saya:** Filter ini meniru fungsi **VLOOKUP & Pivot Table** di Excel — saya bisa menemukan detail barang apa pun dalam hitungan detik, melacak stok per kategori, dan memastikan data selalu akurat. 
-        Kemampuan ini terbukti menghemat waktu penyusunan laporan hingga **60%** (dari 2,5 jam menjadi 1 jam).
+        st.caption("""
+        Tabel ini memuat **150+ SKU** yang saya kelola di gudang. Setiap barang punya identitas lengkap: 
+        SKU, nama, kategori, vendor, lokasi penyimpanan, unit, harga satuan, stok saat ini, stok minimum, 
+        dan status. Kolom **Nilai Stok** dihitung otomatis dari `stok × harga` — mirip cara saya 
+        memakai **VLOOKUP** untuk menarik harga lalu mengalikannya.
         """)
+        st.markdown("Pakai filter di bawah buat simulasi pencarian data dan melihat stok per kategori.")
 
         f1, f2, f3 = st.columns(3)
         with f1:
@@ -496,9 +443,8 @@ def render_warehouse(data):
             }
         )
 
-        # Demo VLOOKUP
         st.markdown("### 🔍 Simulasi VLOOKUP (Pencarian Data)")
-        st.markdown("Pilih SKU untuk menampilkan detail barang (fungsi `vlookup`).")
+        st.markdown("Pilih SKU untuk menampilkan detail barang.")
         sku_options = df_inv['SKU'].tolist()
         selected_sku = st.selectbox("Pilih SKU", sku_options)
         if selected_sku:
@@ -510,19 +456,12 @@ def render_warehouse(data):
             d4.metric("Harga", format_rupiah(row['Harga Satuan']))
             st.markdown(f"**Lokasi:** {row['Lokasi']} | **Vendor:** {row['Vendor']} | **Status:** `{row['Status']}`")
 
-    # ---- TAB 2: TRANSAKSI ----
     with tab_trx:
         st.markdown("### 🔄 Transaksi Barang Masuk / Keluar")
-        st.markdown("Data transaksi 12 bulan (5.000+ record) dengan agregasi otomatis (Pivot Table).")
-
-        st.info("""
-        **📊 Nilai dari Data Ini:** Saya mengelola dan memverifikasi **5.000+ record transaksi** — setiap barang masuk/keluar tercatat dengan dokumen pendukung (PO, Surat Jalan, Faktur). 
-        Dengan agregasi Pivot Table, saya bisa langsung melihat total unit & nilai per bulan, memudahkan **rekonsiliasi stok** dan **pelaporan ke manajemen** secara akurat.
-        """)
+        st.markdown("Data transaksi 12 bulan (5.000+ record) dengan agregasi otomatis.")
 
         t1, t2 = st.columns(2)
         with t1:
-            # Filter bulan
             bulan_list = ['Semua'] + list(df_trx['Bulan'].unique())
             bln_filter = st.selectbox("Pilih Bulan", bulan_list)
         with t2:
@@ -540,9 +479,7 @@ def render_warehouse(data):
                          'Harga Satuan': st.column_config.NumberColumn(format="Rp %.0f"),
                      })
 
-        # Ringkasan transaksi
-        st.markdown("### 📋 Ringkasan Transaksi (Pivot Table)")
-        # Pivot by bulan & tipe
+        st.markdown("### 📋 Ringkasan Transaksi (Pivot)")
         pivot = filtered_trx.groupby(['Bulan', 'Tipe']).agg(
             Jumlah_Transaksi=('Total Nilai', 'count'),
             Total_Unit=('Jumlah', 'sum'),
@@ -551,18 +488,11 @@ def render_warehouse(data):
         st.dataframe(pivot, width='stretch',
                      column_config={'Total_Nilai': st.column_config.NumberColumn(format="Rp %.0f")})
 
-    # ---- TAB 3: ANALISIS ----
     with tab_analisis:
         st.markdown("### 📊 Analisis & Grafik Interaktif")
-        st.info("""
-        **📈 Analisis Data untuk Keputusan:** Visualisasi ini menunjukkan kemampuan saya mengubah data mentah menjadi **insight yang actionable** — 
-        nilai inventaris per kategori, distribusi status stok, dan tren transaksi bulanan. 
-        Ini adalah dasar untuk **rekomendasi reorder point**, **optimasi anggaran**, dan **pengambilan keputusan manajemen** yang lebih baik.
-        """)
 
         g1, g2 = st.columns(2)
         with g1:
-            # Nilai inventaris per kategori
             nilai_kat = df_inv.groupby('Kategori')['Nilai Stok'].sum().reset_index()
             nilai_kat = nilai_kat.sort_values('Nilai Stok', ascending=False)
             st.plotly_chart(
@@ -570,7 +500,6 @@ def render_warehouse(data):
                 width='stretch'
             )
         with g2:
-            # Distribusi status stok
             status_dist = df_inv['Status'].value_counts().reset_index()
             status_dist.columns = ['Status', 'Jumlah']
             st.plotly_chart(
@@ -580,7 +509,6 @@ def render_warehouse(data):
 
         g3, g4 = st.columns(2)
         with g3:
-            # Tren transaksi per bulan
             trx_bulan = df_trx.groupby(['Bulan', 'Tipe'])['Total Nilai'].sum().reset_index()
             st.plotly_chart(
                 stacked_bar_chart(trx_bulan, 'Bulan', 'Total Nilai', 'Tipe',
@@ -588,32 +516,26 @@ def render_warehouse(data):
                 width='stretch'
             )
         with g4:
-            # Jumlah transaksi per bulan
             trx_count = df_trx.groupby('Bulan').size().reset_index(name='Jumlah Transaksi')
             st.plotly_chart(
                 line_chart(trx_count, 'Bulan', 'Jumlah Transaksi', 'Jumlah Transaksi per Bulan', area=True),
                 width='stretch'
             )
 
-        # Treemap kategori
-        st.markdown("### 🗃️ Hierarki Nilai Inventaris (Treemap)")
+        st.markdown("### 🗃 Hierarki Nilai Inventaris (Treemap)")
         st.plotly_chart(
             treemap(df_inv, ['Kategori', 'Nama Barang'], 'Nilai Stok', 'Nilai Inventaris per Barang'),
             width='stretch'
         )
 
 
-# ============================================================
-# HLM: DASHBOARD KEUANGAN
-# ============================================================
 def render_keuangan(data):
     df_fin = data['financial']
     df_budget = data['budget']
 
     st.markdown("## 💰 Dashboard <span class='gradient-text'>Admin Umum & Keuangan</span>", unsafe_allow_html=True)
-    st.markdown("Data administrasi keuangan lengkap: jurnal umum, laporan laba rugi, neraca, dan arus kas — semua dihitung otomatis dari data mentah.")
+    st.markdown("Data administrasi keuangan lengkap: jurnal umum, laba rugi, neraca, dan arus kas — dihitung otomatis dari data mentah.")
 
-    # KPI Keuangan
     total_pendapatan = df_fin[df_fin['Tipe Akun'] == 'Pendapatan']['Jumlah (Rp)'].sum()
     total_beban = df_fin[df_fin['Tipe Akun'] == 'Beban']['Jumlah (Rp)'].sum()
     laba = total_pendapatan - total_beban
@@ -625,21 +547,15 @@ def render_keuangan(data):
     k3.metric("💰 Laba Bersih", format_rupiah(laba), f"{margin:.1f}% margin")
     k4.metric("🧾 Total Transaksi", format_angka(len(df_fin)))
 
-    # Penjelasan detail untuk HRD
-    st.markdown("""
-    <div class="custom-card" style="border-left:4px solid #ff2ec4;">
-        <h3 style="margin-top:0;">🔍 Apa yang Saya Kelola di Dashboard Ini?</h3>
-        <p style="margin-bottom:8px;">
-            Dashboard ini merepresentasikan <b>tanggung jawab Admin Umum & Keuangan</b> yang saya tangani:
-        </p>
-        <ul style="color:#93a4c3;font-size:0.9rem;line-height:1.9;margin-bottom:0;">
-            <li><b>📒 800+ transaksi jurnal umum</b> — Pencatatan seluruh transaksi keuangan (pendapatan, beban, aset, liabilitas, ekuitas) dengan 22 akun COA yang tertib dan terstruktur.</li>
-            <li><b>📈 Laporan Laba Rugi otomatis</b> — Menyusun laporan pendapatan vs beban per bulan dengan margin laba yang terukur, memudahkan manajemen memantau profitabilitas.</li>
-            <li><b>⚖️ Neraca yang balance</b> — Menyajikan posisi keuangan (aset = liabilitas + ekuitas) secara akurat, siap untuk kebutuhan audit internal maupun eksternal.</li>
-            <li><b>💵 Arus kas & anggaran</b> — Memantau kesehatan kas bulanan dan memastikan realisasi anggaran tetap terkendali (hemat ±Rp 30 juta dari total anggaran).</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+    with st.expander("📖 Penjelasan Detail — Dashboard Keuangan", expanded=False):
+        st.markdown("""
+        **Dashboard ini meniru pengelolaan administrasi keuangan di perusahaan secara nyata.**
+        
+        - **📈 Total Pendapatan** adalah seluruh pemasukan dari penjualan produk dan pendapatan lain-lain selama 12 bulan. Saya mencatatnya dari dokumen penjualan (invoice, faktur) ke jurnal umum.
+        - **📉 Total Beban** adalah seluruh pengeluaran operasional (gaji, listrik, sewa, transportasi, ATK, pemasaran, dll). Saya memastikan setiap beban tercatat dengan akun COA yang tepat supaya laporan akurat.
+        - **💰 Laba Bersih** = Pendapatan − Beban. Saya menyusunnya otomatis per bulan sehingga manajemen bisa langsung melihat tren profitabilitas.
+        - **🧾 Total Transaksi** adalah jumlah seluruh entri jurnal yang saya kelola dan verifikasi, mencerminkan volume kerja administrasi keuangan yang tinggi.
+        """)
 
     st.markdown("---")
 
@@ -647,15 +563,9 @@ def render_keuangan(data):
         "📒 Jurnal Umum", "📈 Laba Rugi", "⚖️ Neraca", "💵 Arus Kas", "📊 Anggaran"
     ])
 
-    # ---- TAB 1: JURNAL ----
     with tab_jurnal:
         st.markdown("### 📒 Jurnal Umum (Transaksi Keuangan)")
         st.markdown("Data jurnal 12 bulan dengan filter interaktif.")
-
-        st.info("""
-        **💡 Cara Kerja Saya:** Setiap transaksi keuangan saya catat dengan **kode akun (COA)**, deskripsi, metode pembayaran, dan referensi dokumen. 
-        Filter ini memudahkan saya menelusuri transaksi per bulan atau per tipe akun — bukti kemampuan saya menjaga **ketertiban administrasi keuangan** yang siap diaudit.
-        """)
 
         j1, j2 = st.columns(2)
         with j1:
@@ -674,18 +584,11 @@ def render_keuangan(data):
         st.dataframe(filtered_fin, width='stretch', height=420,
                      column_config={'Jumlah (Rp)': st.column_config.NumberColumn(format="Rp %.0f")})
 
-    # ---- TAB 2: LABA RUGI ----
     with tab_lr:
         st.markdown("### 📈 Laporan Laba Rugi (per Bulan)")
-        st.markdown("Penghitungan otomatis dari jurnal umum: **Pendapatan − Beban = Laba Bersih**.")
-
-        st.info("""
-        **📊 Nilai dari Data Ini:** Laporan laba rugi ini disusun otomatis dari jurnal — saya tidak perlu menghitung manual. 
-        Dengan **margin laba yang terukur per bulan**, manajemen dapat melihat tren profitabilitas dan mengambil keputusan strategis lebih cepat.
-        """)
+        st.markdown("Pendapatan − Beban = Laba Bersih, dihitung otomatis dari jurnal.")
 
         lr = hitung_laba_rugi(df_fin)
-        # Tampilkan metrics
         l1, l2, l3 = st.columns(3)
         l1.metric("Pendapatan (Total)", format_rupiah(lr['Jumlah (Rp)_Pendapatan'].sum()))
         l2.metric("Beban (Total)", format_rupiah(lr['Jumlah (Rp)_Beban'].sum()))
@@ -698,10 +601,8 @@ def render_keuangan(data):
                          'Laba Bersih': st.column_config.NumberColumn(format="Rp %.0f"),
                      })
 
-        # Grafik
         c1, c2 = st.columns(2)
         with c1:
-            # Pendapatan vs Beban line
             lr_plot = lr.melt(id_vars='Bulan', value_vars=['Jumlah (Rp)_Pendapatan', 'Jumlah (Rp)_Beban'],
                               var_name='Kategori', value_name='Nilai')
             lr_plot['Kategori'] = lr_plot['Kategori'].replace({
@@ -717,11 +618,7 @@ def render_keuangan(data):
                 width='stretch'
             )
 
-        # Waterfall
-        st.markdown("### 💧 Waterfall Chart Laba Rugi (Total 12 Bulan)")
-        labels = ['Pendapatan', 'Beban']
-        values = [total_pendapatan, total_beban]
-        # Waterfall manual
+        st.markdown("### 💧 Waterfall Laba Rugi (Total 12 Bulan)")
         wf_labels = ['Pendapatan', 'Beban', 'Laba Bersih']
         wf_values = [total_pendapatan, -total_beban, laba]
         wf_measure = ['relative', 'relative', 'total']
@@ -730,43 +627,29 @@ def render_keuangan(data):
             width='stretch'
         )
 
-    # ---- TAB 3: NERACA ----
     with tab_neraca:
         st.markdown("### ⚖️ Laporan Neraca (Posisi Keuangan)")
-        st.markdown("Ringkasan aset, liabilitas, dan ekuitas yang dihitung otomatis dari seluruh transaksi.")
-
-        st.info("""
-        **⚖️ Akurasi Posisi Keuangan:** Neraca ini memastikan **Aset = Liabilitas + Ekuitas** (balance). 
-        Saya menyusunnya dari data jurnal yang tertib, sehingga laporan siap digunakan untuk **audit internal, perpajakan, dan pengambilan keputusan** oleh manajemen.
-        """)
+        st.markdown("Ringkasan aset, liabilitas, dan ekuitas dihitung otomatis.")
 
         neraca = hitung_neraca(df_fin)
 
-        # KPI neraca
         n1, n2, n3 = st.columns(3)
         n1.metric("🏦 Total Aset", format_rupiah(neraca[neraca['Akun'] == 'Total Aset']['Jumlah (Rp)'].iloc[0]))
         n2.metric("💳 Total Liabilitas", format_rupiah(neraca[neraca['Akun'] == 'Total Liabilitas']['Jumlah (Rp)'].iloc[0]))
-        n3.metric("🏛️ Total Ekuitas", format_rupiah(neraca[neraca['Akun'] == 'Total Ekuitas']['Jumlah (Rp)'].iloc[0]))
+        n3.metric("🏛 Total Ekuitas", format_rupiah(neraca[neraca['Akun'] == 'Total Ekuitas']['Jumlah (Rp)'].iloc[0]))
 
         st.dataframe(neraca, width='stretch',
                      column_config={'Jumlah (Rp)': st.column_config.NumberColumn(format="Rp %.0f")})
 
-        # Pie chart komposisi aset
         aset_items = neraca[neraca['Akun'].isin(['Kas & Bank', 'Piutang Usaha', 'Persediaan', 'Peralatan'])][['Akun', 'Jumlah (Rp)']]
         st.plotly_chart(
             pie_chart(aset_items, 'Akun', 'Jumlah (Rp)', 'Komposisi Aset', hole=0.5),
             width='stretch'
         )
 
-    # ---- TAB 4: ARUS KAS ----
     with tab_aruskas:
         st.markdown("### 💵 Laporan Arus Kas (per Bulan)")
-        st.markdown("Arus kas operasional, investasi, dan pendanaan yang dihitung otomatis.")
-
-        st.info("""
-        **💵 Kesehatan Kas Perusahaan:** Laporan arus kas ini memisahkan aktivitas **operasional, investasi, dan pendanaan**. 
-        Saya memantau arus kas bersih bulanan untuk memastikan perusahaan memiliki **likuiditas yang sehat** dan dapat memenuhi kewajiban tepat waktu.
-        """)
+        st.markdown("Arus kas operasional, investasi, dan pendanaan dihitung otomatis.")
 
         ak = hitung_arus_kas(df_fin)
         st.dataframe(ak, width='stretch',
@@ -782,23 +665,15 @@ def render_keuangan(data):
             width='stretch'
         )
 
-    # ---- TAB 5: ANGGARAN ----
     with tab_budget:
         st.markdown("### 📊 Anggaran vs Realisasi")
         st.markdown("Perbandingan anggaran dan realisasi biaya per kategori.")
 
-        st.info("""
-        **📊 Pengendalian Biaya:** Saya memantau realisasi anggaran terhadap rencana di setiap kategori. 
-        Dengan identifikasi selisih (hemat) secara dini, saya membantu perusahaan **mengendalikan biaya operasional** dan mengalokasikan dana lebih efisien.
-        """)
-
-        # KPI
         b1, b2, b3 = st.columns(3)
         b1.metric("Total Anggaran", format_rupiah(df_budget['Anggaran (Rp)'].sum()))
         b2.metric("Total Realisasi", format_rupiah(df_budget['Realisasi (Rp)'].sum()))
         b3.metric("Selisih (Hemat)", format_rupiah(df_budget['Selisih (Rp)'].sum()))
 
-        # Bar chart anggaran vs realisasi
         budget_plot = df_budget.melt(id_vars='Kategori', value_vars=['Anggaran (Rp)', 'Realisasi (Rp)'],
                                      var_name='Tipe', value_name='Nilai')
         st.plotly_chart(
@@ -815,49 +690,97 @@ def render_keuangan(data):
                      })
 
 
-# ============================================================
-# HLM: HASIL KINERJA
-# ============================================================
+def render_karyawan(data):
+    df_emp = data['employees']
+
+    st.markdown("## 👥 Data <span class='gradient-text'>Karyawan & Administrasi</span>", unsafe_allow_html=True)
+    st.markdown("Pengelolaan data karyawan (SDM) — filter departemen, status kerja, dan analisis penggajian.")
+
+    # KPI ringkas
+    total_gaji = df_emp['Gaji Pokok'].sum() + df_emp['Tunjangan'].sum() + df_emp['Bonus'].sum()
+    e1, e2, e3, e4 = st.columns(4)
+    e1.metric("👥 Total Karyawan", format_angka(len(df_emp)))
+    e2.metric("🏢 Departemen", format_angka(df_emp['Departemen'].nunique()))
+    e3.metric("💰 Total Upah/Bulan", format_rupiah(total_gaji))
+    e4.metric("📋 Status Tetap", f"{df_emp[df_emp['Status Kerja'] == 'Tetap'].shape[0]} orang")
+
+    st.markdown("---")
+
+    tab_tabel, tab_analisis = st.tabs(["📋 Data Karyawan", "📊 Analisis SDM"])
+
+    with tab_tabel:
+        st.markdown("### 📋 Data Karyawan")
+        ef1, ef2 = st.columns(2)
+        with ef1:
+            dept_list = ['Semua'] + list(df_emp['Departemen'].unique())
+            dept = st.selectbox("Departemen", dept_list)
+        with ef2:
+            status_list = ['Semua'] + list(df_emp['Status Kerja'].unique())
+            status = st.selectbox("Status Kerja", status_list)
+
+        filtered = df_emp.copy()
+        if dept != 'Semua':
+            filtered = filtered[filtered['Departemen'] == dept]
+        if status != 'Semua':
+            filtered = filtered[filtered['Status Kerja'] == status]
+
+        st.dataframe(filtered, width='stretch', height=420,
+                     column_config={
+                         'Gaji Pokok': st.column_config.NumberColumn(format="Rp %.0f"),
+                         'Tunjangan': st.column_config.NumberColumn(format="Rp %.0f"),
+                         'Bonus': st.column_config.NumberColumn(format="Rp %.0f"),
+                     })
+
+    with tab_analisis:
+        st.markdown("### 📊 Analisis Komposisi & Penggajian")
+
+        a1, a2 = st.columns(2)
+        with a1:
+            dept_count = df_emp.groupby('Departemen').size().reset_index(name='Jumlah')
+            st.plotly_chart(
+                bar_chart(dept_count, 'Departemen', 'Jumlah', 'Jumlah Karyawan per Departemen'),
+                width='stretch'
+            )
+        with a2:
+            status_dist = df_emp.groupby('Status Kerja').size().reset_index(name='Jumlah')
+            st.plotly_chart(
+                pie_chart(status_dist, 'Status Kerja', 'Jumlah', 'Status Kerja Karyawan', hole=0.45),
+                width='stretch'
+            )
+
+        a3, a4 = st.columns(2)
+        with a3:
+            gaji_dept = df_emp.groupby('Departemen')['Gaji Pokok'].sum().reset_index()
+            gaji_dept = gaji_dept.sort_values('Gaji Pokok', ascending=False)
+            st.plotly_chart(
+                bar_chart(gaji_dept, 'Departemen', 'Gaji Pokok', 'Total Gaji Pokok per Departemen'),
+                width='stretch'
+            )
+        with a4:
+            st.plotly_chart(
+                histogram(df_emp, 'Gaji Pokok', 'Distribusi Gaji Pokok', nbins=15),
+                width='stretch'
+            )
+
+
 def render_kinerja(data):
     df_perf = data['performance']
     df_trx = data['transactions']
     df_inv = data['inventory']
 
     st.markdown("## 🏆 Hasil & <span class='gradient-text'>Nilai Kinerja</span>", unsafe_allow_html=True)
-    st.markdown("Ringkasan pencapaian, nilai tambah, dan KPI yang dapat dipertanggungjawabkan — untuk meyakinkan HRD.")
+    st.markdown("Ringkasan pencapaian, nilai tambah, dan KPI yang bisa dipertanggungjawabkan.")
 
-    # Nilai utama
     st.markdown("### 🎯 Nilai Tambah Utama")
     v1, v2, v3, v4 = st.columns(4)
     v1.metric("📈 Akurasi Data Entry", "99.5%", "naik dari 85%")
-    v2.metric("⏱️ Efisiensi Proses", "2.5x lebih cepat", "2.5 jam → 1 jam")
+    v2.metric("⏱ Efisiensi Proses", "2.5x lebih cepat", "2.5 jam → 1 jam")
     v3.metric("💰 Penghematan Biaya", "Rp 366 jt", "12 bulan")
     v4.metric("📦 Data Kelola", "5.000+ transaksi", "1.000+ item/bulan")
 
-    # Penjelasan detail untuk HRD
-    st.markdown("""
-    <div class="custom-card" style="border-left:4px solid #00ffa3;">
-        <h3 style="margin-top:0;">🏆 Mengapa Nilai Ini Penting untuk Perusahaan Anda?</h3>
-        <p style="margin-bottom:8px;">
-            Setiap angka di dashboard ini adalah <b>hasil nyata yang terukur</b> dari pekerjaan saya sebagai Admin Warehouse & Admin Umum:
-        </p>
-        <ul style="color:#93a4c3;font-size:0.9rem;line-height:1.9;margin-bottom:0;">
-            <li><b>📈 Akurasi 99,5%</b> — Setiap data entry (1.000+ item/bulan) saya verifikasi dengan sistem double-check. Ini berarti <b>lebih sedikit kesalahan stok</b>, <b>lebih sedikit selisih audit</b>, dan <b>laporan yang dapat dipercaya</b> untuk pengambilan keputusan.</li>
-            <li><b>⏱️ Efisiensi 2,5x</b> — Dengan otomatisasi Pivot Table & template dinamis, laporan yang biasanya 2,5 jam selesai dalam 1 jam. Ini menghemat <b>±1,5 jam kerja per hari</b> yang bisa dialokasikan untuk tugas lain.</li>
-            <li><b>💰 Penghematan Rp 366 juta</b> — Melalui analisis stok & negosiasi vendor, saya membantu menekan biaya material dan logistik. Ini <b>dampak langsung ke bottom line</b> perusahaan.</li>
-            <li><b>📦 5.000+ transaksi dikelola</b> — Kemampuan menangani volume data tinggi dengan konsisten, tanpa mengorbankan akurasi — bukti <b>ketahanan kerja</b> dan <b>manajemen beban kerja</b> yang baik.</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
-
     st.markdown("---")
 
-    # KPI chart
     st.markdown("### 📈 KPI Kinerja Bulanan")
-    st.info("""
-    **📈 Tren yang Konsisten Naik:** Grafik di bawah menunjukkan **peningkatan berkelanjutan** selama 12 bulan — akurasi naik dari 98,5% ke 99,9%, waktu proses turun dari 2,5 jam ke 1 jam, dan kepatuhan SOP mencapai 100%. 
-    Ini membuktikan saya bukan hanya mampu bekerja, tetapi **terus belajar dan memperbaiki diri**.
-    """)
     chart1, chart2 = st.columns(2)
     with chart1:
         st.plotly_chart(
@@ -883,8 +806,7 @@ def render_kinerja(data):
             width='stretch'
         )
 
-    # Gauge chart
-    st.markdown("### 🎚️ Pencapaian Target")
+    st.markdown("### 🎚 Pencapaian Target")
     gc1, gc2, gc3 = st.columns(3)
     with gc1:
         st.plotly_chart(gauge_chart(99.5, 'Akurasi Data Entry', 100, COLORS['cyan']), width='stretch')
@@ -893,15 +815,14 @@ def render_kinerja(data):
     with gc3:
         st.plotly_chart(gauge_chart(95, 'Efisiensi Proses', 100, COLORS['magenta']), width='stretch')
 
-    # Pencapaian kualitatif
     st.markdown("### ✨ Pencapaian Kualitatif")
     achievements = [
-        ("📦", "Optimasi Manajemen Inventaris", "Menurunkan stok menipis/habis dari 18% menjadi 5% melalui analisis stok minimum & reorder point yang akurat (VLOOKUP + IF)."),
-        ("⚡", "Percepatan Proses Administrasi", "Memangkas waktu penyusunan laporan dari 2,5 jam menjadi 1 jam dengan otomatisasi Pivot Table & template dinamis."),
-        ("📊", "Akurasi Data Meningkat", "Meningkatkan akurasi data entry dari 85% ke 99,5% melalui sistem double-check & standardisasi format."),
+        ("📦", "Optimasi Manajemen Inventaris", "Menurunkan stok menipis/habis dari 18% menjadi 5% lewat analisis stok minimum & reorder point (VLOOKUP + IF)."),
+        ("⚡", "Percepatan Proses Administrasi", "Memangkas waktu penyusunan laporan dari 2,5 jam menjadi 1 jam lewat otomatisasi Pivot Table & template dinamis."),
+        ("📊", "Akurasi Data Meningkat", "Menaikkan akurasi data entry dari 85% ke 99,5% lewat sistem double-check & standardisasi format."),
         ("💰", "Penghematan Biaya Operasional", "Mengidentifikasi penghematan biaya material & logistik hingga Rp 366 juta dalam 12 bulan."),
         ("🤝", "Koordinasi Vendor", "Mengelola relasi dengan 15+ vendor, memastikan pengiriman tepat waktu & meminimalkan keterlambatan."),
-        ("🛡️", "Kepatuhan & Audit", "Menjaga kepatuhan SOP 99,5% dan siap dalam audit internal dengan dokumentasi lengkap & rapi."),
+        ("🛡", "Kepatuhan & Audit", "Menjaga kepatuhan SOP 99,5% dan siap dalam audit internal dengan dokumentasi lengkap & rapi."),
     ]
     for icon, title, desc in achievements:
         st.markdown(f"""
@@ -914,12 +835,7 @@ def render_kinerja(data):
         </div>
         """, unsafe_allow_html=True)
 
-    # Data transaksi diproses summary
     st.markdown("### 📊 Statistik Pengelolaan Data")
-    st.info("""
-    **📦 Skala Tanggung Jawab:** Angka-angka ini menunjukkan **volume pekerjaan nyata** yang pernah saya tangani — 
-    ribuan unit barang masuk/keluar dan ratusan SKU yang harus selalu akurat. Ini bukti saya siap menghadapi **lingkungan kerja dengan volume tinggi**.
-    """)
     total_masuk = df_trx[df_trx['Tipe'] == 'Barang Masuk']['Jumlah'].sum()
     total_keluar = df_trx[df_trx['Tipe'] == 'Barang Keluar']['Jumlah'].sum()
     s1, s2, s3 = st.columns(3)
@@ -928,31 +844,24 @@ def render_kinerja(data):
     s3.metric("Total SKU Dikelola", format_angka(len(df_inv)), "item")
 
 
-# ============================================================
-# FOOTER
-# ============================================================
 def render_footer():
     st.markdown("""
     <div class="footer">
         Dibuat dengan <span style="color:#ff2ec4;">💜</span> oleh <b style="color:#00f0ff;">Anita Tiara Sani</b> — Admin Warehouse &amp; Admin Umum<br>
-© 2026 · Data dummy untuk demonstrasi portfolio
+        © 2026 · Data dummy untuk demonstrasi portfolio
     </div>
     """, unsafe_allow_html=True)
 
 
-# ============================================================
-# MAIN
-# ============================================================
 def main():
     inject_css()
     render_header()
 
-    # Navigasi sidebar
     with st.sidebar:
         st.markdown("### 🧭 Navigasi")
         page = st.radio(
             "Pilih Halaman",
-            ["🏠 Beranda / Profil", "🏭 Dashboard Warehouse", "💰 Dashboard Keuangan", "🏆 Hasil Kinerja"],
+            ["🏠 Beranda / Profil", "🏭 Dashboard Warehouse", "💰 Dashboard Keuangan", "👥 Data Karyawan", "🏆 Hasil Kinerja"],
             label_visibility="collapsed"
         )
 
@@ -967,16 +876,16 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-    # Muat data (cache)
     data = load_data()
 
-    # Render halaman sesuai pilihan
     if page.startswith("🏠"):
         render_beranda()
     elif page.startswith("🏭"):
         render_warehouse(data)
     elif page.startswith("💰"):
         render_keuangan(data)
+    elif page.startswith("👥"):
+        render_karyawan(data)
     elif page.startswith("🏆"):
         render_kinerja(data)
 
@@ -985,7 +894,7 @@ def main():
 
 @st.cache_data
 def load_data():
-    """Memuat dan cache data."""
+    """Muat dan cache semua data."""
     return load_all_data()
 
 

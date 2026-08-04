@@ -1,72 +1,62 @@
-# 📊 Portfolio Interaktif — Anita Tiara Sani
+# Portfolio Anita Tiara Sani — Admin Warehouse & Admin Umum
 
-**Admin Warehouse & Admin Umum | Data-Driven Portfolio**
+Portfolio profesional berbasis data, dibangun dengan **Streamlit + Python**. Semua angka di dashboard dihitung dari data dummy yang realistis (inventaris 150+ item, transaksi 5.000+, jurnal keuangan 800 entri, data karyawan, KPI 12 bulan, dan anggaran).
 
-Portfolio profesional modern berbasis **Python (Streamlit)** yang menampilkan keahlian administrasi, keuangan, logistik, dan pengolahan data secara interaktif. Dibuat untuk menonjol di mata HRD dengan dashboard data nyata, grafik interaktif, dan nilai kinerja yang terukur.
+## Halaman
 
----
+| Halaman | Isi |
+|---------|-----|
+| 🏠 **Beranda / Profil** | Ringkasan profil, keahlian, sertifikasi, pengalaman, pendidikan, kontak |
+| 🏭 **Dashboard Warehouse** | Inventaris 150+ SKU, transaksi masuk/keluar, simulasi VLOOKUP, pivot, grafik analisis |
+| 💰 **Dashboard Keuangan** | Jurnal umum, laba rugi, neraca, arus kas, anggaran vs realisasi |
+| 👥 **Data Karyawan** | Data SDM, filter departemen & status, analisis penggajian dan komposisi karyawan |
+| 🏆 **Hasil Kinerja** | KPI bulanan, pencapaian kualitatif, gauge chart, statistik pengelolaan data |
 
-## ✨ Fitur Unggulan
-
-| Halaman | Deskripsi |
-|---------|-----------|
-| 🏠 **Beranda / Profil** | Profil profesional, keahlian teknis, soft skills, sertifikasi, pengalaman kerja, pendidikan, dan kontak |
-| 🏭 **Dashboard Admin Warehouse** | Manajemen inventaris 145+ item, transaksi barang masuk/keluar 5.000+ record, simulasi VLOOKUP, Pivot Table, dan nested IF |
-| 💰 **Dashboard Admin Umum & Keuangan** | Jurnal umum, laporan laba rugi, neraca, arus kas, dan anggaran vs realisasi — semua dihitung otomatis |
-| 🏆 **Hasil Kinerja** | KPI, pencapaian, nilai tambah, gauge chart, dan statistik pengelolaan data |
-
-## 🚀 Cara Menjalankan
+## Cara menjalankan
 
 ```bash
-# 1. Masuk ke folder proyek
 cd portfolio-anita-python
 
-# 2. (Opsional) Buat virtual environment
+# (opsional) buat virtual environment
 python -m venv venv
-venv\Scripts\activate   # Windows
+venv\Scripts\activate
 
-# 3. Install dependensi
+# install dependensi
 pip install -r requirements.txt
 
-# 4. Jalankan aplikasi
+# jalankan
 streamlit run app.py
 ```
 
-Aplikasi akan terbuka di browser: **http://localhost:8501**
+Lalu buka http://localhost:8501 di browser.
 
-## 🗂️ Struktur Proyek
+## Struktur
 
 ```
 portfolio-anita-python/
-├── app.py                    # Aplikasi Streamlit utama (+ CSS styling)
-├── requirements.txt          # Dependensi
-├── README.md                 # Dokumentasi ini
+├── app.py                # Aplikasi utama + styling CSS
+├── api/
+│   └── index.py          # Endpoint sederhana untuk platform Vercel
 ├── data/
-│   └── generate_data.py      # Generator dummy data realistis (seed konsisten)
-└── utils/
-    ├── formulas.py           # Formula aktif: VLOOKUP, pivot, keuangan, KPI
-    └── charts.py             # Grafik interaktif Plotly (styling premium)
+│   └── generate_data.py  # Generator data dummy realistis (seed tetap)
+├── utils/
+│   ├── formulas.py       # Logika VLOOKUP, pivot, perhitungan keuangan, KPI
+│   └── charts.py         # Fungsi grafik Plotly sesuai tema
+├── .streamlit/
+│   └── config.toml       # Konfigurasi tema & server
+├── vercel.json
+└── requirements.txt
 ```
 
-## 📊 Data yang Dihasilkan (Dummy Realistis)
+## Deploy
 
-| Dataset | Jumlah | Keterangan |
-|---------|--------|------------|
-| Inventaris | 145 item | Bahan baku, barang jadi, sparepart, ATK, peralatan |
-| Transaksi inventaris | 5.000 record | Barang masuk & keluar 12 bulan |
-| Jurnal keuangan | 800 record | 22 akun COA, pendapatan, beban, aset, liabilitas |
-| Data karyawan | 50 orang | Penggajian & administrasi umum |
-| KPI kinerja | 12 bulan | Akurasi, kepatuhan, efisiensi, transaksi |
-| Anggaran | 10 kategori | Anggaran vs realisasi |
+Opsi termudah: deploy melalui **Streamlit Community Cloud** — tinggal hubungkan repo ini ke app.streamlit.io.
 
-## 🎯 Nilai Kinerja Utama (untuk HRD)
+Untuk deploy ke Vercel, struktur `api/` dan `vercel.json` sudah disiapkan, tetapi perlu server ASGI (`api/index.py`) untuk benar-benar menghosting aplikasi. Rekomendasi: pakai **Streamlit Community Cloud** supaya lebih stabil, gratis, dan otomatis tersambung ke repo.
 
-- 📈 **Akurasi data entry 99,5%** (naik dari 85%)
-- ⏱️ **Efisiensi proses 2,5x lebih cepat** (2,5 jam → 1 jam)
-- 💰 **Penghematan biaya Rp 366 juta** dalam 12 bulan
-- 📦 **Pengelolaan 5.000+ transaksi** & 1.000+ item/bulan
-- 📊 **Kemampuan implementasi logika Excel** (VLOOKUP, Pivot Table, IF) dalam Python
+## Catatan
 
----
+Semua data bersifat dummy dan dibuat ulang setiap kali aplikasi dijalankan (seed konsisten), jadi angka bisa berubah-ubah sedikit tapi tetap realistis. Data ini ditujukan untuk demonstrasi kemampuan, bukan data produksi.
 
-© 2026 Anita Tiara Sani · Data untuk demonstrasi portfolio
+© 2026 Anita Tiara Sani
+
