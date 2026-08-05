@@ -24,6 +24,29 @@ def vlookup_batch(df, lookup_values, lookup_col, return_col):
     return [vlookup(df, val, lookup_col, return_col) for val in lookup_values]
 
 
+# ==== INDEX/MATCH ====
+def index_match(df, lookup_value, lookup_col, return_col):
+    """
+    Simulasi INDEX/MATCH Excel: cari posisi lookup_value di lookup_col,
+    lalu ambil nilai dari return_col di posisi yang sama.
+    Lebih fleksibel dari VLOOKUP karena kolom return bisa di kiri lookup.
+    """
+    try:
+        # Cari index baris yang cocok
+        mask = df[lookup_col] == lookup_value
+        if mask.any():
+            row_idx = df.index[mask][0]
+            return df.loc[row_idx, return_col]
+        return None
+    except Exception:
+        return None
+
+
+def index_match_batch(df, lookup_values, lookup_col, return_col):
+    # INDEX/MATCH banyak sekaligus
+    return [index_match(df, val, lookup_col, return_col) for val in lookup_values]
+
+
 # ==== Nested IF ====
 def nested_if(value, conditions):
     """
@@ -196,4 +219,3 @@ def format_persen(value, decimals=1):
 
 def format_angka(value):
     return f"{value:,.0f}".replace(',', '.')
-

@@ -43,4 +43,3 @@ if __name__ == '__main__':
         print('\nSemua file Python valid.')
     else:
         print('\nAda file Python yang bermasalah, cek di atas.')
-
