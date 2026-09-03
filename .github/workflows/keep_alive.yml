@@ -1,0 +1,30 @@
+name: Keep Streamlit App Alive
+
+on:
+  schedule:
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Mengambil seluruh riwayat git
+
+      - name: Update Ping File and Force Push
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@://github.com"
+          
+          # Membuat atau memperbarui file ping dengan timestamp terbaru
+          date > ping.txt
+          
+          git add ping.txt
+          # Mengubah commit terakhir (amend) tanpa menambah riwayat baru
+          git commit --amend -m "Chore: Streamlit keep-alive ping" || git commit -m "Chore: Streamlit keep-alive ping"
+          
+          # Melakukan force push agar riwayat commit tetap bersih dan hanya ada 1 commit ping
+          git push --force
