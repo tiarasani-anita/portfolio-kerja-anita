@@ -345,7 +345,7 @@ def render_beranda():
         <div class="custom-card">
             <span class="badge badge-green">Jul 2019 - Mei 2022</span>
             <h3>SMA Negeri 2 Pringsewu</h3>
-            <p>Ilmu Pengetahuan Sosial · Nilai Rata-rata 81.91/100</p>
+            <p>Ilmu Pengetahuan Sosial</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -360,7 +360,7 @@ def render_beranda():
         </div>
         """, unsafe_allow_html=True)
     with ce2:
-        li_url = "https://www.linkedin.com/in/anitatiarasani"
+        li_url = "https://www.linkedin.com/in/anita-tiara-sani-6b811b156?utm_source=share_via&utm_content=profile&utm_medium=member_android"
         wa_url = "https://wa.me/6285669323610"
         st.markdown(f"""
         <div style="display:flex;flex-direction:column;gap:10px;">
@@ -386,7 +386,7 @@ def render_warehouse(data):
 
     with st.expander("Penjelasan Detail — Dashboard Warehouse", expanded=False):
         st.markdown("""
-        **Dashboard ini meniru pekerjaan admin warehouse di perusahaan manufaktur secara nyata.**
+        **Dashboard ini merupakan pekerjaan admin warehouse di perusahaan manufaktur.**
         
         - **Total Nilai Inventaris** adalah jumlah dari seluruh nilai stok barang (stok × harga satuan) di gudang. Angka besar ini menunjukkan saya terbiasa mengelola aset perusahaan yang bernilai miliaran rupiah.
         - **Total SKU** menunjukkan berapa banyak jenis barang berbeda yang harus saya ketahui detailnya (nama, lokasi, vendor, harga, stok minimum). Semakin banyak SKU, semakin tinggi tingkat kompleksitas pengelolaannya.
